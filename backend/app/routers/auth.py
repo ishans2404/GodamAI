@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Header, HTTPException
 from app.models.schemas import LoginRequest, SignupRequest
 from app.services.supabase_client import get_supabase
 
@@ -88,7 +89,6 @@ async def change_password(
     authorization: Optional[str] = Header(None)
 ):
     """Change password for authenticated user."""
-    from fastapi import Header as FHeader
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization required")
     supabase = get_supabase()
@@ -103,7 +103,7 @@ async def change_password(
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
 
     try:
-        # Sign in with current password to verify
+        # Verify current password
         email = user.user.email
         current_password = data.get("current_password", "")
         verify = supabase.auth.sign_in_with_password({
@@ -112,14 +112,12 @@ async def change_password(
         if not verify.user:
             raise HTTPException(status_code=401, detail="Current password is incorrect")
 
-        # Update password via admin
-        from app.services.supabase_client import get_supabase_admin
-        admin = get_supabase_admin()
-        admin.auth.admin.update_user_by_id(
-            user.user.id,
-            {"password": new_password}
+        # Update password — requires service_role key
+        # For now, use the Supabase Dashboard instead of in-app password change
+        raise HTTPException(
+            status_code=501,
+            detail="Password change not available via anon key. Use Supabase Dashboard."
         )
-        return {"message": "Password changed successfully"}
     except HTTPException:
         raise
     except Exception as e:

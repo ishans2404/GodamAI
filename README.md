@@ -23,7 +23,7 @@ uvicorn app.main:app --reload  # → http://localhost:8000
 ### 3 — Seed demo data
 ```bash
 cd backend
-python seed.py
+python -X utf8 seed.py
 # Creates: admin@godamai.com / admin123 + demo warehouse + 15 items
 ```
 
